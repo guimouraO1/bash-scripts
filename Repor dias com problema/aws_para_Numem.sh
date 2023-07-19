@@ -1,34 +1,51 @@
 #!/bin/bash
 
 ###########################################################################
-#                        Script para repor dias perdidos                  #
+#        Script para copiar arquivos para uma pasta em nuvem GOES-16      #
 ###########################################################################
 #  Metodo: Diario                                                         #
-#  Descricao: Copia por meio de rclone da aws para a nuvem level2         #
+#  Descricao: Script para copiar apenas o dia anterior para uma pasta em  #
+#  nuvem GOES-16                                                          #
 #  Autor: Guilherme de Moura Oliveira  <guimoura@unicamp.br>              #
-#  Data: 09/07/2023                                                       #
-#  Atualizacao: 09/07/2023                                                #
+#  Data: 9/05/2023                                                        #
+#  Atualizacao: 18/05/2023                                                #
 ###########################################################################
 
-# AWS -> Nuvem
+ARQ_LOG="bkp_level2-nuvem`date +%Y-%m-%d`.log"
 
-# Definir variáveis
-src="aws:/noaa-goes16/ABI-L2-CMIPF/2023/"
-dest="level2_5:/ano2023/"
-log_dir="/home/guimoura/logs/rclone/"
+DIR_LOG=C:/Users/Gui/OneDrive/Documentos/copiar/logs/
 
-# Loop para cada dia
-for ((day=126; day<=127; day++))
-do
-  # Definir o caminho do dia atual
-  
-  # Formata o número do dia para juliano com três dígitos
-  dia_juliano=$(printf "%03d" $dia)
-  current_dest="${dest}dia${dia_juliano}/"
+#Obtendo o ano e dia anterior em dia juliano
+ano=$(date +%Y -d "-1 day")
 
-  # Executar o comando rclone
-  rclone copy "$src$current_day/" "$current_dest" --include "*.*" --log-level INFO --log-file "${log_dir}dia${current_day}.txt"
+dia=131
 
-# Exibir mensagem de conclusão
-echo "Cópia do dia ${current_day} concluída."
-done
+# Diretório de origem
+origem="aws:/noaa-goes16/ABI-L1b-RadF/2023/$dia"
+
+# Diretório de destino
+destino="level1b_2:/ano$ano/dia$dia/"
+
+#Inicia o script
+echo "=========================================================================================================" &>> $DIR_LOG/$ARQ_LOG
+echo "=========================================================================================================" &>> $DIR_LOG/$ARQ_LOG
+echo "                            INICIANDO SCRIPT BACKUP PARA O DRIVE $(date '+%Y-%m-%d %H:%M:%S')            " &>> $DIR_LOG/$ARQ_LOG
+echo "=========================================================================================================" &>> $DIR_LOG/$ARQ_LOG
+echo "=========================================================================================================" &>> $DIR_LOG/$ARQ_LOG
+echo "" &>> $DIR_LOG/$ARQ_LOG
+echo "" &>> $DIR_LOG/$ARQ_LOG
+
+
+# Move o arquivo para o diretório de destino
+echo "Rclone size Ano: $ano Dia: $dia" >> $DIR_LOG$ARQ_LOG
+rclone size $origem --log-file=$DIR_LOG$ARQ_LOG -v >> $DIR_LOG$ARQ_LOG
+rclone copy $origem $destino --transfers=100 --log-level INFO --log-file=$DIR_LOG$ARQ_LOG
+# rclone copy $origem $destino --transfers=100 --dry-run --log-level INFO --log-file=$DIR_LOG$ARQ_LOG
+
+echo "=========================================================================================================" >> "$DIR_LOG/$ARQ_LOG"
+echo "=========================================================================================================" >> "$DIR_LOG/$ARQ_LOG"
+echo "=                                 FINALIZANDO O SCRIPT $(date '+%Y-%m-%d %H:%M:%S')                     =" >> "$DIR_LOG/$ARQ_LOG"
+echo "=========================================================================================================" >> "$DIR_LOG/$ARQ_LOG"
+echo "=========================================================================================================" >> "$DIR_LOG/$ARQ_LOG"
+echo "" &>> $DIR_LOG/$ARQ_LOG
+echo "" &>> $DIR_LOG/$ARQ_LOG
